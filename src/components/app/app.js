@@ -14,8 +14,10 @@ class App extends Component{
 				data :[
 					{name:'John1' ,salary: 2800 , increase: true, rise: true, id: 1},
 					{name:'Bob2' ,salary: 1800, increase: false, rise: false, id: 2},
-					{name:'John3' ,salary: 544800, increase: true, rise: false, id: 3}
-				]
+					{name:'John3' ,salary: 544800, increase: false, rise: false, id: 3}
+				],
+				term:'',
+				filter:'all'
 		}
 	}
 	number= ()=>{
@@ -36,8 +38,26 @@ class App extends Component{
 			}
 		})
 	}
+
+	onUpdateSearch =(term)=>{
+		this.setState({term});
+	}
+	searchEmp = (items,term)=>{
+		if (term.length===0){
+			return items;
+		}
+		return items.filter(item=>{
+			return item.name.indexOf(term) > -1  // indexOf находит кусочки имени которое мы вписали (> - 1 тут прикол в том что -1 озночает что мы ничего не нашли поэтому ишем больше чем -1 )
+		});
+	}
+
 	addItem = (name, salary) => {
-    const lastIndex = this.state.data.length + 1; // +1 для определения следующего индекса
+    
+	if(name===''|| salary===''){
+		return;
+	}
+	
+	const lastIndex = this.state.data.length + 1; // +1 для определения следующего индекса
     const newItem = {
         name: name,
         salary: salary,
@@ -74,20 +94,40 @@ class App extends Component{
 		}))
 	}
 
-	
+	filterPost = (items , filter)=>{
+		// eslint-disable-next-line default-case
+		switch(filter){
+			case 'rise':
+				return items.filter(item => item.rise);
+			case 'moreThen10000':
+				return items.filter(item =>item.salary > 1000)
+			default:
+				return items;
+		}
+	}
 
+	onFilterSelect = (filter)=>{
+		this.setState({filter});
+	}
+	
 	render() {
+		 const {data , term, filter} = this.state;
+		 const visibelData =this.filterPost(this.searchEmp(data, term), filter);
 		return (
+
+		 
 			<div className="app">
 				<AppInfo  number={this.number}
 				prize={this.prize}/>
 
 				<div className="search-panel">
-				<SearchPanel/>
-				<AppFilter/>
+				<SearchPanel
+				onUpdateSearch={this.onUpdateSearch}/>
+				<AppFilter filter={filter}
+				onFilterSelect={this.onFilterSelect}/>
 
-				</div>
-					<EmployersList data = {this.state.data}
+				</div>	
+					<EmployersList data = {visibelData}
 					onDelete={this.deleteItem}
 					onToggleProp={this.onToggleProp}
 					/>
